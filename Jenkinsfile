@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -15,15 +16,24 @@ pipeline {
             }
         }
 
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat '''
+                        powershell -NoProfile -NonInteractive -Command "$env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin"
+                    '''
+                }
+            }
+        }
+
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry(
-                        'https://index.docker.io/v1/',
-                        'dockerhub-creds'
-                    ) {
-                        docker.image("${DOCKER_IMAGE}:latest").push()
-                    }
+                    docker.image("${DOCKER_IMAGE}:latest").push()
                 }
             }
         }

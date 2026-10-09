@@ -8,12 +8,6 @@ pipeline {
 
     stages {
 
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/bhoomikakc23/jenkins.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
@@ -22,22 +16,13 @@ pipeline {
             }
         }
 
-        stage('Login to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
-                }
-            }
-        }
-
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('', 'dockerhub-creds') {
+                    docker.withRegistry(
+                        'https://index.docker.io/v1/',
+                        'dockerhub-creds'
+                    ) {
                         docker.image("${DOCKER_IMAGE}:latest").push()
                     }
                 }
@@ -47,12 +32,15 @@ pipeline {
 
     post {
         success {
-            echo 'Image successfully built and pushed to Docker Hub'
+            echo 'Image successfully built and pushed to Docker Hub!'
         }
 
         failure {
-            echo 'Pipeline failed'
+            echo 'Pipeline failed. Check Console Output for errors.'
+        }
+
+        always {
+            echo 'CI/CD pipeline execution completed.'
         }
     }
 }
-

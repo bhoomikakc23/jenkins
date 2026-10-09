@@ -8,12 +8,6 @@ pipeline {
 
     stages {
 
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/bhoomikakc23/jenkins.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
@@ -55,5 +49,3 @@ pipeline {
         }
     }
 }
-
-
